@@ -24,6 +24,9 @@ const ReviewSchema = new mongoose.Schema({
 		type: String,
 		required: false,
 	},
+	reviewDateStamp: {
+		type: Date,
+	},
 	isReplied: {
 		type: Boolean,
 	},

@@ -75,7 +75,7 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 						if ($isReplied) {
 							isReplied = true;
 						}
-						console.log(isReplied);
+						let reviewDateStamp = new Date($reviewDate);
 						//Review Object
 						const review = {
 							rating: $reviewScore,
@@ -85,6 +85,7 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 							comment: $reviewComment,
 							isReplied: isReplied,
 							app: item,
+							reviewDateStamp: reviewDateStamp,
 						};
 
 						//Check if Review Exists in DB
@@ -179,6 +180,18 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 							.first()
 							.text()
 							.trim();
+						const $isReplied = $element
+							.find('.review-reply .review-reply__header')
+							.children()
+							.first()
+							.text();
+
+						let isReplied = false;
+						if ($isReplied) {
+							isReplied = true;
+						}
+
+						let reviewDateStamp = new Date($reviewDate);
 
 						//Review Object
 						const review = {
@@ -187,9 +200,10 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 							storeName: $reviewStore,
 							location: $reviewLocation,
 							comment: $reviewComment,
+							isReplied: isReplied,
 							app: item,
+							reviewDateStamp: reviewDateStamp,
 						};
-
 						//Check if Review Exists in DB
 						Review.exists(
 							{ storeName: review.storeName },
@@ -231,19 +245,44 @@ exports.getAllApps = asyncHandeler(async (req, res, next) => {
 	});
 });
 
+exports.getNumberOfReviewsByStarRating = asyncHandeler(
+	async (req, res, next) => {
+		const reviewsOneStar = await Review.find({ rating: { $eq: 1 } });
+		const reviewsTwoStar = await Review.find({ rating: { $eq: 2 } });
+		const reviewsThreeStar = await Review.find({ rating: { $eq: 3 } });
+		const reviewsFourStar = await Review.find({ rating: { $eq: 4 } });
+		const reviewsFiveStar = await Review.find({ rating: { $eq: 5 } });
+
+		const reviews = {
+			oneStart: reviewsOneStar.length,
+			twoStar: reviewsTwoStar.length,
+			threeStar: reviewsThreeStar.length,
+			fourStar: reviewsFourStar.length,
+			fiveStar: reviewsFiveStar.length,
+		};
+		res.status(200).json({
+			success: true,
+			reviews: reviews,
+		});
+	}
+);
+
 exports.testRouteForScraper = asyncHandeler(async (req, res, next) => {
 	const apps = await Apps.find();
 	const refined = apps.map((item) => item.appName);
 	const url = `https://apps.shopify.com/${refined}/reviews`;
 
-	let ress = '';
-	await axios.get(url).then((res) => {
-		const $ = cheerio.load(res.data);
-		reply = $('.new-app-listing-review-reply__header-item').text();
-	});
+	const reviews = 'December 28, 2021';
+	const date = new Date(reviews);
+	console.log(date);
+	// let ress = '';
+	// await axios.get(url).then((res) => {
+	// 	const $ = cheerio.load(res.data);
+	// 	reply = $('.new-app-listing-review-reply__header-item').text();
+	// });
 	res.status(201).json({
 		success: true,
-		data: ress,
+		data: date,
 	});
 });
 

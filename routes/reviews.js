@@ -10,6 +10,7 @@ const {
 	getAllReviews,
 	getNuberOfReviews,
 	testRouteForScraper,
+	getNumberOfReviewsByStarRating,
 } = require('../controllers/reviews_mech');
 
 //Router setup
@@ -23,5 +24,6 @@ router.route('/add-app-name').post(addAppName);
 router.route('/get-all-apps').get(getAllApps);
 router.route('/get-all-reviews').get(getAllReviews);
 router.route('/test').get(testRouteForScraper);
+router.route('/reviews-by-star-rating').get(getNumberOfReviewsByStarRating);
 
 module.exports = router;
