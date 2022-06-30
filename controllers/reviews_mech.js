@@ -6,6 +6,8 @@ const cheerio = require('cheerio');
 const axios = require('axios');
 const delay = require('delay');
 
+// Route http://localhost:5000/ha.api/v1/reviews/retrive-reviews
+// POST Req
 exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 	// Get all app names
 	const apps = await Apps.find();
@@ -14,13 +16,15 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 	const refined = apps.map((item) => item.appName);
 	let pageCountTemp = 2;
 
+	//Run for each APP
 	for (let i = 0; i < refined.length; i++) {
 		let item = refined[i];
 
+		//Run for each page of the app
 		for (let pageTemp = 1; pageTemp <= pageCountTemp; pageTemp++) {
 			try {
 				console.log(pageCountTemp);
-				const url = `https://apps.shopify.com/form-builder-by-hulkapps/reviews?page=${pageTemp}`;
+				const url = `https://apps.shopify.com/${refined[i]}/reviews?page=${pageTemp}`;
 				console.log(url);
 
 				//Scraper Query (Do not change)!!!
@@ -76,6 +80,7 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 							isReplied = true;
 						}
 						let reviewDateStamp = new Date($reviewDate);
+
 						//Review Object
 						const review = {
 							rating: $reviewScore,
@@ -90,7 +95,7 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 
 						//Check if Review Exists in DB
 						Review.exists(
-							{ storeName: review.storeName },
+							{ storeName: review.storeName, app: item },
 							function (err, result) {
 								if (err) {
 									res.send(err);
@@ -122,6 +127,8 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 	});
 });
 
+// Route http://localhost:5000/ha.api/v1/reviews/retrive-newest-reviews
+// POST Req
 exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 	async (req, res, next) => {
 		// Get all app names
@@ -245,6 +252,16 @@ exports.getAllApps = asyncHandeler(async (req, res, next) => {
 	});
 });
 
+exports.deleteApp = asyncHandeler(async (req, res, next) => {
+	const deleteApp = req.body.app;
+	const apps = await Apps.findOneAndDelete({ appName: deleteApp });
+
+	res.status(200).json({
+		success: true,
+		data: apps,
+	});
+});
+
 exports.getNumberOfReviewsByStarRating = asyncHandeler(
 	async (req, res, next) => {
 		const reviewsOneStar = await Review.find({ rating: { $eq: 1 } });
@@ -269,20 +286,91 @@ exports.getNumberOfReviewsByStarRating = asyncHandeler(
 
 exports.testRouteForScraper = asyncHandeler(async (req, res, next) => {
 	const apps = await Apps.find();
-	const refined = apps.map((item) => item.appName);
-	const url = `https://apps.shopify.com/${refined}/reviews`;
+	// const refined = apps.map((item) => item.appName);
+	const url = `https://apps.shopify.com/restock-master-email-sms/reviews?page=2`;
 
-	const reviews = 'December 28, 2021';
-	const date = new Date(reviews);
-	console.log(date);
-	// let ress = '';
-	// await axios.get(url).then((res) => {
-	// 	const $ = cheerio.load(res.data);
-	// 	reply = $('.new-app-listing-review-reply__header-item').text();
-	// });
+	//Scraper Query (Do not change)!!!
+	await axios.get(url).then((res) => {
+		const $ = cheerio.load(res.data);
+
+		pageCountTemp = $('a.search-pagination__link--hide').last().text();
+
+		$('.review-listing ').each(function (i, element) {
+			const $element = $(element);
+			// console.log(element);
+			const $reviewScore = $element
+				.find('div div div div div div')
+				.attr('data-rating');
+
+			const $reviewDate = $element
+				.find('div div div .review-metadata__item-label')
+				.text()
+				.trim();
+
+			const $reviewStore = $element
+				.find(
+					'div div .review-listing-header .review-listing-header__text'
+				)
+				.text()
+				.trim();
+
+			const $reviewLocation = $element
+				.find('div div .review-merchant-characteristic__item span')
+				.text()
+				.trim();
+
+			const $reviewComment = $element
+				.find('div div .review-content .truncate-content-copy')
+				.children()
+				.first()
+				.text()
+				.trim();
+			const $isReplied = $element
+				.find('.review-reply .review-reply__header')
+				.children()
+				.first()
+				.text();
+
+			let isReplied = false;
+			if ($isReplied) {
+				isReplied = true;
+			}
+			let reviewDateStamp = new Date($reviewDate);
+
+			//Review Object
+			const review = {
+				rating: $reviewScore,
+				date: $reviewDate,
+				storeName: $reviewStore,
+				location: $reviewLocation,
+				comment: $reviewComment,
+				isReplied: isReplied,
+				app: 'volume-discount-by-hulkapps',
+				reviewDateStamp: reviewDateStamp,
+			};
+			// const data = Review.create(review);
+			// console.log('Writing New Review');
+			//Check if Review Exists in DB
+			Review.exists(
+				{ storeName: review.storeName },
+				function (err, result) {
+					if (err) {
+						res.send(err);
+					} else if (result === null) {
+						//If no write it
+						console.log('Writing New Review');
+						const data = Review.create(review);
+					} else {
+						//If yes skip
+						console.log('Review exists');
+					}
+				}
+			);
+		});
+	});
 	res.status(201).json({
 		success: true,
-		data: date,
+		// data: date,
 	});
 });
 

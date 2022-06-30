@@ -14,7 +14,7 @@ const ReviewSchema = new mongoose.Schema({
 	storeName: {
 		type: String,
 		required: true,
-		unique: true,
+		unique: false,
 	},
 	location: {
 		type: String,
