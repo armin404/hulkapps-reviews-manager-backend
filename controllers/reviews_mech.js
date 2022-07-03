@@ -5,6 +5,7 @@ const asyncHandeler = require('../middleware/async');
 const cheerio = require('cheerio');
 const axios = require('axios');
 const delay = require('delay');
+const moment = require('moment');
 
 // Route http://localhost:5000/ha.api/v1/reviews/retrive-reviews
 // POST Req
@@ -115,14 +116,16 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 				//Delay 1.2 sec (Shopify limits 50 req per min)
 				await delay(1200);
 			} catch (error) {
-				console.log(error);
+				res.status(500).json({
+					success: false,
+				});
 			}
 		}
 
 		await delay(1000);
 	}
 
-	res.status(201).json({
+	res.status(200).json({
 		success: true,
 	});
 });
@@ -400,6 +403,185 @@ exports.getNuberOfReviews = asyncHandeler(async (req, res, next) => {
 	res.status(201).json({
 		success: true,
 		data: numberOfReviews,
+	});
+});
+
+exports.getThisMonthLastMonth = asyncHandeler(async (req, res, next) => {
+	const todayDate = new Date();
+
+	// Last Month
+	const startDayOfPrevWeek = moment(todayDate)
+		.subtract(1, 'month')
+		.startOf('month');
+	const lastDayOfPrevWeek = moment(todayDate)
+		.subtract(1, 'month')
+		.endOf('month');
+
+	//This Month
+	const firstDayOfThisMonth = moment(todayDate).startOf('month');
+
+	const lastMonthReviews = await Review.count({
+		reviewDateStamp: {
+			$gte: startDayOfPrevWeek,
+			$lt: lastDayOfPrevWeek,
+		},
+	});
+
+	const thisMonthReviews = await Review.count({
+		reviewDateStamp: {
+			$gte: firstDayOfThisMonth,
+		},
+	});
+
+	res.status(201).json({
+		success: true,
+		data: {
+			lastMonthReviews: lastMonthReviews,
+			thisMonthReviews: thisMonthReviews,
+		},
+	});
+});
+
+exports.getLast12Months = asyncHandeler(async (req, res, next) => {
+	const todayDate = new Date();
+
+	// Last Month
+	const firstStart = moment(todayDate).subtract(1, 'month').startOf('month');
+	const firstEnd = moment(todayDate).subtract(1, 'month').endOf('month');
+
+	// 2 Month
+	const secondStart = moment(todayDate).subtract(2, 'month').startOf('month');
+	const secondEnd = moment(todayDate).subtract(2, 'month').endOf('month');
+
+	// Last Month
+	const thirdStart = moment(todayDate).subtract(3, 'month').startOf('month');
+	const thirdEnd = moment(todayDate).subtract(3, 'month').endOf('month');
+
+	// Last Month
+	const fourtStart = moment(todayDate).subtract(4, 'month').startOf('month');
+	const fourtEnd = moment(todayDate).subtract(4, 'month').endOf('month');
+
+	// Last Month
+	const fifthStart = moment(todayDate).subtract(5, 'month').startOf('month');
+	const fifthEnd = moment(todayDate).subtract(5, 'month').endOf('month');
+	// Last Month
+	const sixthStart = moment(todayDate).subtract(6, 'month').startOf('month');
+	const sixtEnd = moment(todayDate).subtract(6, 'month').endOf('month');
+	// Last Month
+	const seventhStart = moment(todayDate)
+		.subtract(7, 'month')
+		.startOf('month');
+	const seventhEnd = moment(todayDate).subtract(7, 'month').endOf('month');
+	// Last Month
+	const eightStart = moment(todayDate).subtract(8, 'month').startOf('month');
+	const eightEnd = moment(todayDate).subtract(8, 'month').endOf('month');
+	// Last Month
+	const ninethStart = moment(todayDate).subtract(9, 'month').startOf('month');
+	const ninethEnd = moment(todayDate).subtract(9, 'month').endOf('month');
+	// Last Month
+	const tenStart = moment(todayDate).subtract(10, 'month').startOf('month');
+	const tenEnd = moment(todayDate).subtract(10, 'month').endOf('month');
+	// Last Month
+	const elevenStart = moment(todayDate)
+		.subtract(11, 'month')
+		.startOf('month');
+	const elevenEnd = moment(todayDate).subtract(11, 'month').endOf('month');
+	// Last Month
+	const twelveStart = moment(todayDate)
+		.subtract(12, 'month')
+		.startOf('month');
+	const twelveEnd = moment(todayDate).subtract(12, 'month').endOf('month');
+
+	const fir = await Review.count({
+		reviewDateStamp: {
+			$gte: firstStart,
+			$lt: firstEnd,
+		},
+	});
+	const sec = await Review.count({
+		reviewDateStamp: {
+			$gte: secondStart,
+			$lt: secondEnd,
+		},
+	});
+	const thi = await Review.count({
+		reviewDateStamp: {
+			$gte: thirdStart,
+			$lt: thirdEnd,
+		},
+	});
+	const four = await Review.count({
+		reviewDateStamp: {
+			$gte: fourtStart,
+			$lt: fourtEnd,
+		},
+	});
+	const fif = await Review.count({
+		reviewDateStamp: {
+			$gte: fifthStart,
+			$lt: fifthEnd,
+		},
+	});
+	const six = await Review.count({
+		reviewDateStamp: {
+			$gte: sixthStart,
+			$lt: sixtEnd,
+		},
+	});
+	const sev = await Review.count({
+		reviewDateStamp: {
+			$gte: seventhStart,
+			$lt: seventhEnd,
+		},
+	});
+	const eig = await Review.count({
+		reviewDateStamp: {
+			$gte: eightStart,
+			$lt: eightEnd,
+		},
+	});
+	const nin = await Review.count({
+		reviewDateStamp: {
+			$gte: ninethStart,
+			$lt: ninethEnd,
+		},
+	});
+	const ten = await Review.count({
+		reviewDateStamp: {
+			$gte: tenStart,
+			$lt: tenEnd,
+		},
+	});
+	const ele = await Review.count({
+		reviewDateStamp: {
+			$gte: elevenStart,
+			$lt: elevenEnd,
+		},
+	});
+
+	const twe = await Review.count({
+		reviewDateStamp: {
+			$gte: twelveStart,
+			$lt: twelveEnd,
+		},
+	});
+
+	res.status(201).json({
+		success: true,
+		res: {
+			month1: fir,
+			month2: sec,
+			month3: thi,
+			month4: four,
+			month5: fif,
+			month6: six,
+			month7: sev,
+			month8: eig,
+			month9: nin,
+			month10: ten,
+			month11: ele,
+			month12: twe,
+		},
 	});
 });
 
