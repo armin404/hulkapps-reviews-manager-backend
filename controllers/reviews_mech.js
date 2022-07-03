@@ -486,11 +486,8 @@ exports.getLast12Months = asyncHandeler(async (req, res, next) => {
 		.subtract(11, 'month')
 		.startOf('month');
 	const elevenEnd = moment(todayDate).subtract(11, 'month').endOf('month');
-	// Last Month
-	const twelveStart = moment(todayDate)
-		.subtract(12, 'month')
-		.startOf('month');
-	const twelveEnd = moment(todayDate).subtract(12, 'month').endOf('month');
+	//This Month
+	const firstDayOfThisMonth = moment(todayDate).startOf('month');
 
 	const fir = await Review.count({
 		reviewDateStamp: {
@@ -559,10 +556,9 @@ exports.getLast12Months = asyncHandeler(async (req, res, next) => {
 		},
 	});
 
-	const twe = await Review.count({
+	const current = await Review.count({
 		reviewDateStamp: {
-			$gte: twelveStart,
-			$lt: twelveEnd,
+			$gte: firstDayOfThisMonth,
 		},
 	});
 
@@ -580,7 +576,7 @@ exports.getLast12Months = asyncHandeler(async (req, res, next) => {
 			month9: nin,
 			month10: ten,
 			month11: ele,
-			month12: twe,
+			current: current,
 		},
 	});
 });
