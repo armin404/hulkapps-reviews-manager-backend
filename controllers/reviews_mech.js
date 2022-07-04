@@ -445,13 +445,6 @@ exports.getThisMonthLastMonth = asyncHandeler(async (req, res, next) => {
 		},
 	});
 
-	const csv = await Review.find({
-		reviewDateStamp: {
-			$gte: startDayOfPrevWeek,
-			$lt: lastDayOfPrevWeek,
-		},
-	});
-
 	const thisMonthReviews = await Review.count({
 		reviewDateStamp: {
 			$gte: firstDayOfThisMonth,
@@ -589,20 +582,7 @@ exports.getLast12Months = asyncHandeler(async (req, res, next) => {
 
 	res.status(201).json({
 		success: true,
-		res: {
-			month1: fir,
-			month2: sec,
-			month3: thi,
-			month4: four,
-			month5: fif,
-			month6: six,
-			month7: sev,
-			month8: eig,
-			month9: nin,
-			month10: ten,
-			month11: ele,
-			current: current,
-		},
+		res: [ele, ten, nin, eig, sev, six, fif, four, thi, sec, fir, current],
 	});
 });
 
