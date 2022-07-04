@@ -6,6 +6,9 @@ const cheerio = require('cheerio');
 const axios = require('axios');
 const delay = require('delay');
 const moment = require('moment');
+const fastcsv = require('fast-csv');
+const fs = require('fs');
+const ws = fs.createWriteStream('data.csv');
 
 // Route http://localhost:5000/ha.api/v1/reviews/retrive-reviews
 // POST Req
@@ -21,10 +24,18 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 	for (let i = 0; i < refined.length; i++) {
 		let item = refined[i];
 
+		const url2 = `https://apps.shopify.com/${refined[i]}/reviews`;
+		await axios.get(url2).then((res) => {
+			const $ = cheerio.load(res.data);
+
+			const pp = $('a.search-pagination__link--hide').last().text();
+
+			pageCountTemp = parseInt(pp);
+		});
+
 		//Run for each page of the app
 		for (let pageTemp = 1; pageTemp <= pageCountTemp; pageTemp++) {
 			try {
-				console.log(pageCountTemp);
 				const url = `https://apps.shopify.com/${refined[i]}/reviews?page=${pageTemp}`;
 				console.log(url);
 
@@ -32,17 +43,16 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 				await axios.get(url).then((res) => {
 					const $ = cheerio.load(res.data);
 
-					pageCountTemp = $('a.search-pagination__link--hide')
-						.last()
-						.text();
-
+					console.log('Page count ', pageCountTemp);
 					$('.review-listing ').each(function (i, element) {
 						const $element = $(element);
-						// console.log(element);
+
 						const $reviewScore = $element
 							.find('div div div div div div')
 							.attr('data-rating');
-
+						const $postId = $element
+							.find('div')
+							.attr('data-review-id');
 						const $reviewDate = $element
 							.find('div div div .review-metadata__item-label')
 							.text()
@@ -86,6 +96,7 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 						const review = {
 							rating: $reviewScore,
 							date: $reviewDate,
+							postId: $postId,
 							storeName: $reviewStore,
 							location: $reviewLocation,
 							comment: $reviewComment,
@@ -96,13 +107,15 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 
 						//Check if Review Exists in DB
 						Review.exists(
-							{ storeName: review.storeName, app: item },
+							{ postId: review.postId },
 							function (err, result) {
 								if (err) {
 									res.send(err);
 								} else if (result === null) {
 									//If no write it
 									console.log('Writing New Review');
+									console.log(review.postId);
+
 									const data = Review.create(review);
 								} else {
 									//If yes skip
@@ -158,6 +171,9 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 
 					$('.review-listing ').each(function (i, element) {
 						const $element = $(element);
+						const $postId = $element
+							.find('div')
+							.attr('data-review-id');
 						// console.log(element);
 						const $reviewScore = $element
 							.find('div div div div div div')
@@ -207,6 +223,7 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 						const review = {
 							rating: $reviewScore,
 							date: $reviewDate,
+							postId: $postId,
 							storeName: $reviewStore,
 							location: $reviewLocation,
 							comment: $reviewComment,
@@ -214,14 +231,15 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 							app: item,
 							reviewDateStamp: reviewDateStamp,
 						};
-						//Check if Review Exists in DB
+						// Check if Review Exists in DB
 						Review.exists(
-							{ storeName: review.storeName },
+							{ postId: review.postId },
 							function (err, result) {
 								if (err) {
 									res.send(err);
 								} else if (result === null) {
 									//If no write it
+									console.log(review.postId);
 									console.log('Writing New Review');
 									const data = Review.create(review);
 								} else {
@@ -421,6 +439,13 @@ exports.getThisMonthLastMonth = asyncHandeler(async (req, res, next) => {
 	const firstDayOfThisMonth = moment(todayDate).startOf('month');
 
 	const lastMonthReviews = await Review.count({
+		reviewDateStamp: {
+			$gte: startDayOfPrevWeek,
+			$lt: lastDayOfPrevWeek,
+		},
+	});
+
+	const csv = await Review.find({
 		reviewDateStamp: {
 			$gte: startDayOfPrevWeek,
 			$lt: lastDayOfPrevWeek,

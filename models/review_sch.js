@@ -11,6 +11,11 @@ const ReviewSchema = new mongoose.Schema({
 		required: true,
 		unique: false,
 	},
+	postId: {
+		type: Number,
+		required: true,
+		unique: true,
+	},
 	storeName: {
 		type: String,
 		required: true,
@@ -33,6 +38,12 @@ const ReviewSchema = new mongoose.Schema({
 	app: {
 		type: String,
 		required: true,
+		unique: false,
+	},
+	assignedAgent: {
+		type: Number,
+		default: null,
+		require: false,
 	},
 	createdAt: {
 		type: Date,
