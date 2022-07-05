@@ -274,8 +274,8 @@ exports.getAllApps = asyncHandeler(async (req, res, next) => {
 });
 
 exports.deleteApp = asyncHandeler(async (req, res, next) => {
-	const deleteApp = req.body.app;
-	const apps = await Apps.findOneAndDelete({ appName: deleteApp });
+	const { app } = req.body;
+	const apps = await Apps.findOneAndDelete({ appName: app });
 
 	res.status(200).json({
 		success: true,
