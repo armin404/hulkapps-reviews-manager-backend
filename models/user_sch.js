@@ -20,8 +20,8 @@ const UserSchema = new mongoose.Schema({
 	},
 	role: {
 		type: String,
-		enum: ['user', 'publisher'],
-		default: 'user',
+		enum: ['user', 'admin', 'readOnly'],
+		default: 'readOnly',
 	},
 	isAgent: {
 		type: Boolean,

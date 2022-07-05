@@ -6,9 +6,7 @@ const cheerio = require('cheerio');
 const axios = require('axios');
 const delay = require('delay');
 const moment = require('moment');
-const fastcsv = require('fast-csv');
 const fs = require('fs');
-const ws = fs.createWriteStream('data.csv');
 
 // Route http://localhost:5000/ha.api/v1/reviews/retrive-reviews
 // POST Req
@@ -24,13 +22,17 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 	for (let i = 0; i < refined.length; i++) {
 		let item = refined[i];
 
+		// Get nuber of avalible pages for each app (ONCE!!!)
 		const url2 = `https://apps.shopify.com/${refined[i]}/reviews`;
+
 		await axios.get(url2).then((res) => {
 			const $ = cheerio.load(res.data);
 
-			const pp = $('a.search-pagination__link--hide').last().text();
+			const numberOfPages = $('a.search-pagination__link--hide')
+				.last()
+				.text();
 
-			pageCountTemp = parseInt(pp);
+			pageCountTemp = parseInt(numberOfPages);
 		});
 
 		//Run for each page of the app
@@ -140,6 +142,7 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 
 	res.status(200).json({
 		success: true,
+		msg: 'Reviews Retrived Susscessfuly. All up to Date',
 	});
 });
 
@@ -260,6 +263,7 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 
 		res.status(200).json({
 			success: true,
+			msg: 'Reviews Retrived Susscessfuly. All up to Date',
 		});
 	}
 );
@@ -398,7 +402,6 @@ exports.testRouteForScraper = asyncHandeler(async (req, res, next) => {
 exports.getAllReviews = asyncHandeler(async (req, res, next) => {
 	const filterQuery = req.body.filter;
 	const filterQueryType = req.body.type;
-	console.log(filterQuery);
 
 	if (!filterQueryType) {
 		const reviews = await Review.find({});

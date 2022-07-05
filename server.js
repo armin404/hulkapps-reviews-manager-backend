@@ -36,7 +36,7 @@ app.use(xss());
 //Rate limiting
 const limiter = rateLimit({
 	windowsMs: 10 * 60 * 1000, //10 Minutes
-	max: 10000,
+	max: 100000,
 });
 
 app.use(limiter);
@@ -44,9 +44,10 @@ app.use(limiter);
 //Prevent HPP
 app.use(hpp());
 
-//Ruters
+//Review Rout
 app.use('/ha.api/v1/reviews', review);
-// app.use("/ha.api/v1/comments", comments);
+
+//User Auth Route
 app.use('/ha.api/v1/auth', auth);
 
 // var port = process.env.PORT || 3000;
