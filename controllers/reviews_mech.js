@@ -396,16 +396,26 @@ exports.testRouteForScraper = asyncHandeler(async (req, res, next) => {
 });
 
 exports.getAllReviews = asyncHandeler(async (req, res, next) => {
-	const filterQuery = req.body.app;
+	const filterQuery = req.body.filter;
+	const filterQueryType = req.body.type;
+	console.log(filterQuery);
 
-	if (!filterQuery) {
+	if (!filterQueryType) {
 		const reviews = await Review.find({});
 		res.status(201).json({
 			success: true,
 			data: reviews,
 		});
-	} else {
-		const reviews = await Review.find({ app: { $eq: filterQuery } });
+	} else if (filterQueryType === 'rating') {
+		const reviews = await Review.find({ rating: { $eq: filterQuery } });
+		res.status(201).json({
+			success: true,
+			data: reviews,
+		});
+	} else if (filterQueryType === 'app') {
+		const reviews = await Review.find({
+			app: { $eq: filterQuery },
+		});
 		res.status(201).json({
 			success: true,
 			data: reviews,
