@@ -452,6 +452,38 @@ exports.getThisWeek = asyncHandeler(async (req, res, next) => {
 	});
 });
 
+exports.numberOfReviewsPerApp = asyncHandeler(async (req, res, next) => {
+	let data = [];
+
+	// Get all app names
+	const apps = await Apps.find();
+
+	// Map app names
+	const refined = apps.map((item) => item.appName);
+
+	for (let i = 0; i < refined.length; i++) {
+		let item = refined[i];
+
+		const reviews = await Review.count({
+			app: {
+				$eq: item,
+			},
+		});
+
+		const res = {
+			appName: item,
+			numberOfReviews: reviews,
+		};
+
+		data.push(res);
+	}
+
+	res.status(201).json({
+		success: true,
+		data: data,
+	});
+});
+
 exports.getTodayReviews = asyncHandeler(async (req, res, next) => {
 	const todayDate = new Date();
 	const today = moment(todayDate).startOf('day');

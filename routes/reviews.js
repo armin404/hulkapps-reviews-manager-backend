@@ -16,6 +16,7 @@ const {
 	getLast12Months,
 	getTodayReviews,
 	getThisWeek,
+	numberOfReviewsPerApp,
 } = require('../controllers/reviews_mech');
 
 //Router setup
@@ -35,5 +36,6 @@ router.route('/this-month-last-month').get(getThisMonthLastMonth);
 router.route('/get-last-12').get(getLast12Months);
 router.route('/get-number-of-reviews-today').get(getTodayReviews);
 router.route('/get-this-week-reviews').get(getThisWeek);
+router.route('/reviews-per-app').get(numberOfReviewsPerApp);
 
 module.exports = router;
