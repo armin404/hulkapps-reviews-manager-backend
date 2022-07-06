@@ -456,7 +456,7 @@ exports.getTodayReviews = asyncHandeler(async (req, res, next) => {
 	const todayDate = new Date();
 	const today = moment(todayDate).startOf('day');
 
-	const reviews = await Review.find({
+	const reviews = await Review.count({
 		reviewDateStamp: {
 			$gte: today,
 		},
