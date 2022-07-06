@@ -1,7 +1,7 @@
 const express = require('express');
 const {
 	//Controllers import using JS Destructuring
-	//   getUsers,
+	getUsers,
 	//   getUser,
 	createUser,
 	updateUser,
@@ -12,8 +12,8 @@ const router = express.Router({ mergeParams: true });
 
 const { protect, authorize } = require('../middleware/auth');
 
-router.use(protect);
-router.use(authorize('admin'));
+// router.use(protect);
+// router.use(authorize('admin'));
 
 router
 	.route('/')
@@ -25,5 +25,7 @@ router
 	//   .get(getUser)
 	.put(updateUser)
 	.delete(deleteUser);
+
+router.route('/get-all-users').get(getUsers);
 
 module.exports = router;

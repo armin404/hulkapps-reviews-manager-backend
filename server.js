@@ -10,6 +10,7 @@ const cors = require('cors');
 // Files
 const auth = require('./routes/auth'); //Route Files
 const review = require('./routes/reviews'); //Route Files
+const users = require('./routes/users');
 
 const connectDB = require('./config/dataBase'); //DB Files
 
@@ -49,6 +50,8 @@ app.use('/ha.api/v1/reviews', review);
 
 //User Auth Route
 app.use('/ha.api/v1/auth', auth);
+
+app.use('/ha.api/v1/users', users);
 
 // var port = process.env.PORT || 3000;
 app.listen(process.env.PORT || 5000, function () {

@@ -1,12 +1,16 @@
 const asyncHandler = require('../middleware/async');
-const User = require('../models/User');
+const User = require('../models/user_sch');
 
 //Desc     Get all users
 //Route    GET /api/v1/users
 //Access    Private/Admin
 
 exports.getUsers = asyncHandler(async (req, res, next) => {
-	res.status(200).json(res.advancedResults);
+	const users = await User.find({}).select('-password');
+	res.status(200).json({
+		success: true,
+		data: users,
+	});
 });
 
 //Desc      Get single user

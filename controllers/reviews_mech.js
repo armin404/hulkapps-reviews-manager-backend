@@ -437,6 +437,22 @@ exports.getNuberOfReviews = asyncHandeler(async (req, res, next) => {
 	});
 });
 
+exports.getTodayReviews = asyncHandeler(async (req, res, next) => {
+	const todayDate = new Date();
+	const today = moment(todayDate).startOf('day');
+
+	const reviews = await Review.find({
+		reviewDateStamp: {
+			$gte: today,
+		},
+	});
+
+	res.status(201).json({
+		success: true,
+		data: reviews,
+	});
+});
+
 exports.getThisMonthLastMonth = asyncHandeler(async (req, res, next) => {
 	const todayDate = new Date();
 
