@@ -196,5 +196,14 @@ exports.confirmEmail = asyncHandler(async (req, res, next) => {
 //Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
 	const token = user.getSignedJwtToken();
-	res.status(statusCode).json({ succes: true, user: user.name, token });
+	res.status(statusCode).json({
+		succes: true,
+		user: {
+			_id: user._id,
+			name: user.name,
+			email: user.email,
+			isAgent: user.isAgent,
+		},
+		token,
+	});
 };
