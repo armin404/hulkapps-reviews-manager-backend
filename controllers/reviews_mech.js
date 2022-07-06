@@ -643,7 +643,7 @@ exports.addAppName = asyncHandeler(async (req, res, next) => {
 				const newApp = Apps.create(appObj);
 				res.status(200).json({
 					success: true,
-					data: newApp,
+					data: appObj,
 				});
 			} else {
 				//If yes skip
