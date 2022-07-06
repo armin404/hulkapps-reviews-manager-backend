@@ -15,6 +15,7 @@ const {
 	getThisMonthLastMonth,
 	getLast12Months,
 	getTodayReviews,
+	getThisWeek,
 } = require('../controllers/reviews_mech');
 
 //Router setup
@@ -33,5 +34,6 @@ router.route('/delete-app/:id').delete(deleteApp);
 router.route('/this-month-last-month').get(getThisMonthLastMonth);
 router.route('/get-last-12').get(getLast12Months);
 router.route('/get-number-of-reviews-today').get(getTodayReviews);
+router.route('/get-this-week-reviews').get(getThisWeek);
 
 module.exports = router;

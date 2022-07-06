@@ -436,6 +436,22 @@ exports.getNuberOfReviews = asyncHandeler(async (req, res, next) => {
 	});
 });
 
+exports.getThisWeek = asyncHandeler(async (req, res, next) => {
+	const todayDate = new Date();
+	const thisWeek = moment(todayDate).startOf('week');
+
+	const reviews = await Review.count({
+		reviewDateStamp: {
+			$gte: thisWeek,
+		},
+	});
+
+	res.status(200).json({
+		success: true,
+		data: reviews,
+	});
+});
+
 exports.getTodayReviews = asyncHandeler(async (req, res, next) => {
 	const todayDate = new Date();
 	const today = moment(todayDate).startOf('day');
