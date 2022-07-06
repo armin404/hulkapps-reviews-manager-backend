@@ -641,16 +641,20 @@ exports.addAppName = asyncHandeler(async (req, res, next) => {
 				//If no write it
 				console.log('Adding New App');
 				const newApp = Apps.create(appObj);
+				res.status(200).json({
+					success: true,
+					data: newApp,
+				});
 			} else {
 				//If yes skip
+				res.status(500).json({
+					success: false,
+					msg: 'App Exists',
+				});
 				console.log('App Exists');
 			}
 		});
 	} catch (error) {
 		console.log(error);
 	}
-	res.status(201).json({
-		success: true,
-		data: appObj,
-	});
 });
