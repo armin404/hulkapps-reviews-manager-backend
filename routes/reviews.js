@@ -29,7 +29,7 @@ router.route('/get-all-apps').get(getAllApps);
 router.route('/get-all-reviews').get(getAllReviews);
 router.route('/test').get(testRouteForScraper);
 router.route('/reviews-by-star-rating').get(getNumberOfReviewsByStarRating);
-router.route('/delete-app').delete(deleteApp);
+router.route('/delete-app/:id').delete(deleteApp);
 router.route('/this-month-last-month').get(getThisMonthLastMonth);
 router.route('/get-last-12').get(getLast12Months);
 router.route('/get-number-of-reviews-today').get(getTodayReviews);
