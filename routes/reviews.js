@@ -26,7 +26,7 @@ router.route('/retrive-newest-reviews').post(retrieveNewestReviewsAndUpdateDb);
 router.route('/get-number-of-reviews').get(getNuberOfReviews);
 router.route('/add-app-name').post(addAppName);
 router.route('/get-all-apps').get(getAllApps);
-router.route('/get-all-reviews').get(getAllReviews);
+router.route('/get-all-reviews').post(getAllReviews);
 router.route('/test').get(testRouteForScraper);
 router.route('/reviews-by-star-rating').get(getNumberOfReviewsByStarRating);
 router.route('/delete-app/:id').delete(deleteApp);
