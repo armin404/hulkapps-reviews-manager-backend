@@ -278,11 +278,11 @@ exports.getAllApps = asyncHandeler(async (req, res, next) => {
 });
 
 exports.deleteApp = asyncHandeler(async (req, res, next) => {
-	const apps = await Apps.findByIdAndDelete(req.params.id);
+	await Apps.findByIdAndDelete(req.params.id);
 
 	res.status(200).json({
 		success: true,
-		data: apps,
+		data: {},
 	});
 });
 
