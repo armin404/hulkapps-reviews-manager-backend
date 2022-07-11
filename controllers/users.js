@@ -13,6 +13,22 @@ exports.getUsers = asyncHandler(async (req, res, next) => {
 	});
 });
 
+//Desc     Get all users
+//Route    GET /api/v1/users
+//Access    Private/Admin
+
+exports.getAgents = asyncHandler(async (req, res, next) => {
+	const users = await User.find({
+		isAgent: {
+			$eq: true,
+		},
+	});
+	res.status(200).json({
+		success: true,
+		data: users,
+	});
+});
+
 //Desc      Get single user
 //Route     GET /api/v1/users/:id
 //Access    Private/Admin

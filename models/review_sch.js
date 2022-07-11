@@ -41,9 +41,18 @@ const ReviewSchema = new mongoose.Schema({
 		unique: false,
 	},
 	assignedAgent: {
-		type: Number,
-		default: null,
-		require: false,
+		agentName: {
+			type: String,
+			required: false,
+		},
+		agentEmail: {
+			type: String,
+			required: false,
+		},
+		agentId: {
+			type: Number,
+			required: false,
+		},
 	},
 	createdAt: {
 		type: Date,

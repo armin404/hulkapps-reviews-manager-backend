@@ -536,6 +536,42 @@ exports.getThisMonthLastMonth = asyncHandeler(async (req, res, next) => {
 	});
 });
 
+exports.assignAgentToReview = asyncHandeler(async (req, res, next) => {
+	const filter = { postId: req.params.id };
+	const update = { assignedAgent: req.body.agent };
+
+	// `doc` is the document _before_ `update` was applied
+	const updatedReview = await Review.findOneAndUpdate(filter, update);
+	res.status(201).json({
+		success: true,
+		thisReview: updatedReview,
+	});
+});
+
+exports.getReviewsFilteredByAgents = asyncHandeler(async (req, res, next) => {
+	const selectedAgent = req.body.selectedAgent;
+	const filter = { assignedAgent: { $eq: selectedAgent } };
+
+	const reviewsByAgent = await Review.find(filter);
+
+	res.status(201).json({
+		success: true,
+		reviews: reviewsByAgent,
+	});
+});
+
+exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
+	const message = {
+		storeName: '',
+		location: '',
+		rating: '',
+		date: '',
+		commetnt: '',
+		agent: '',
+	};
+	axios.post();
+});
+
 exports.getLast12Months = asyncHandeler(async (req, res, next) => {
 	const todayDate = new Date();
 

@@ -17,6 +17,9 @@ const {
 	getTodayReviews,
 	getThisWeek,
 	numberOfReviewsPerApp,
+	assignAgentToReview,
+	slackChanelWebhook,
+	getReviewsFilteredByAgents,
 } = require('../controllers/reviews_mech');
 
 //Router setup
@@ -37,5 +40,8 @@ router.route('/get-last-12').get(getLast12Months);
 router.route('/get-number-of-reviews-today').get(getTodayReviews);
 router.route('/get-this-week-reviews').get(getThisWeek);
 router.route('/reviews-per-app').get(numberOfReviewsPerApp);
+router.route('/assignAgentToReview/:id').put(assignAgentToReview);
+// router.route('/send-message-to-slack').get(slackChanelWebhook);
+router.route('/assignAgentToReview/:id').put(assignAgentToReview);
 
 module.exports = router;

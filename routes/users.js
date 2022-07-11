@@ -2,6 +2,7 @@ const express = require('express');
 const {
 	//Controllers import using JS Destructuring
 	getUsers,
+	getAgents,
 	//   getUser,
 	createUser,
 	updateUser,
@@ -27,5 +28,6 @@ router
 	.delete(deleteUser);
 
 router.route('/get-all-users').get(getUsers);
+router.route('/get-all-agents').get(getAgents);
 
 module.exports = router;
