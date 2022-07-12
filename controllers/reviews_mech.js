@@ -605,27 +605,24 @@ exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
 		agent: 'nnnaknda',
 	};
 	axios
-		.post(
-			'https://hooks.slack.com/services/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',
-			{
-				blocks: [
-					{
-						type: 'section',
-						text: {
-							type: 'mrkdwn',
-							text: `Store Name: ${message.storeName}`,
-						},
+		.post('', {
+			blocks: [
+				{
+					type: 'section',
+					text: {
+						type: 'mrkdwn',
+						text: `Store Name: ${message.storeName}`,
 					},
-					{
-						type: 'section',
-						text: {
-							type: 'mrkdwn',
-							text: `Location: ${message.location}`,
-						},
+				},
+				{
+					type: 'section',
+					text: {
+						type: 'mrkdwn',
+						text: `Location: ${message.location}`,
 					},
-				],
-			}
-		)
+				},
+			],
+		})
 		.then(() => {
 			res.send('Form submitted!');
 		})
