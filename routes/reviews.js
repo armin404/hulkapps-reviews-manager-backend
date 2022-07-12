@@ -40,8 +40,8 @@ router.route('/get-last-12').get(getLast12Months);
 router.route('/get-number-of-reviews-today').get(getTodayReviews);
 router.route('/get-this-week-reviews').get(getThisWeek);
 router.route('/reviews-per-app').get(numberOfReviewsPerApp);
-router.route('/assignAgentToReview/:id').put(assignAgentToReview);
-// router.route('/send-message-to-slack').get(slackChanelWebhook);
-router.route('/assignAgentToReview/:id').put(assignAgentToReview);
+router.route('/assign-agent-to-review/:id').patch(assignAgentToReview);
+router.route('/send-message-to-slack').post(slackChanelWebhook);
+router.route('/reviews-filtered-by-agent').get(getReviewsFilteredByAgents);
 
 module.exports = router;

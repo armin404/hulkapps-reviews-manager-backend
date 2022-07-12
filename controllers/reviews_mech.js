@@ -6,7 +6,8 @@ const cheerio = require('cheerio');
 const axios = require('axios');
 const delay = require('delay');
 const moment = require('moment');
-const fs = require('fs');
+const User = require('../models/user_sch');
+const { search } = require('../routes/reviews');
 
 // Route http://localhost:5000/ha.api/v1/reviews/retrive-reviews
 // POST Req
@@ -103,6 +104,7 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 							location: $reviewLocation,
 							comment: $reviewComment,
 							isReplied: isReplied,
+							isSentToSlack: false,
 							app: item,
 							reviewDateStamp: reviewDateStamp,
 						};
@@ -231,6 +233,7 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 							location: $reviewLocation,
 							comment: $reviewComment,
 							isReplied: isReplied,
+							isSentToSlack: false,
 							app: item,
 							reviewDateStamp: reviewDateStamp,
 						};
@@ -538,10 +541,15 @@ exports.getThisMonthLastMonth = asyncHandeler(async (req, res, next) => {
 
 exports.assignAgentToReview = asyncHandeler(async (req, res, next) => {
 	const filter = { postId: req.params.id };
-	const update = { assignedAgent: req.body.agent };
+	const update = { assignedAgent: req.body.assignedAgent };
 
-	// `doc` is the document _before_ `update` was applied
-	const updatedReview = await Review.findOneAndUpdate(filter, update);
+	console.log(filter);
+	console.log(update);
+
+	const updateReview = await Review.findOneAndUpdate(filter, update);
+	const updatedReview = await Review.find({ postId: { $eq: req.params.id } });
+
+	console.log(updatedReview);
 	res.status(201).json({
 		success: true,
 		thisReview: updatedReview,
@@ -549,27 +557,81 @@ exports.assignAgentToReview = asyncHandeler(async (req, res, next) => {
 });
 
 exports.getReviewsFilteredByAgents = asyncHandeler(async (req, res, next) => {
-	const selectedAgent = req.body.selectedAgent;
-	const filter = { assignedAgent: { $eq: selectedAgent } };
+	const agents = await User.find({
+		isAgent: {
+			$eq: true,
+		},
+	});
+	let reviewsPerAgent = [];
+	const refined = agents.map((item) => item.email);
+	for (let i = 0; i < refined.length; i++) {
+		let item = refined[i];
+		console.log(item);
+		const searchReviews = await Review.count({
+			'assignedAgent.agentEmail': {
+				$eq: item,
+			},
+		});
 
-	const reviewsByAgent = await Review.find(filter);
+		const oneAgent = {
+			agentEmail: item,
+			numberOfReviews: searchReviews,
+		};
+
+		reviewsPerAgent.push(oneAgent);
+	}
+	// const selectedAgent = req.body.selectedAgent;
+	// const filter = { assignedAgent: { $eq: selectedAgent } };
+
+	// const reviewsByAgent = await Review.find(filter);
 
 	res.status(201).json({
 		success: true,
-		reviews: reviewsByAgent,
+		reviews: reviewsPerAgent,
 	});
 });
 
 exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
+	// const filter = { postId: req.params.id };
+	// const update = { isSentToSlack: req.body.isSentToSlack };
+	// const updateReview = await Review.findOneAndUpdate(filter, update);
+
 	const message = {
-		storeName: '',
-		location: '',
-		rating: '',
-		date: '',
-		commetnt: '',
-		agent: '',
+		storeName: 'ttt',
+		location: 'safew',
+		rating: '5',
+		date: '324',
+		commetnt: 'qwfwe',
+		agent: 'nnnaknda',
 	};
-	axios.post();
+	axios
+		.post(
+			'https://hooks.slack.com/services/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',
+			{
+				blocks: [
+					{
+						type: 'section',
+						text: {
+							type: 'mrkdwn',
+							text: `Store Name: ${message.storeName}`,
+						},
+					},
+					{
+						type: 'section',
+						text: {
+							type: 'mrkdwn',
+							text: `Location: ${message.location}`,
+						},
+					},
+				],
+			}
+		)
+		.then(() => {
+			res.send('Form submitted!');
+		})
+		.catch(() => {
+			res.send('Form submission failed!');
+		});
 });
 
 exports.getLast12Months = asyncHandeler(async (req, res, next) => {

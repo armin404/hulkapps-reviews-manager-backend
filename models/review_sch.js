@@ -35,6 +35,9 @@ const ReviewSchema = new mongoose.Schema({
 	isReplied: {
 		type: Boolean,
 	},
+	isSentToSlack: {
+		type: Boolean,
+	},
 	app: {
 		type: String,
 		required: true,
@@ -50,7 +53,7 @@ const ReviewSchema = new mongoose.Schema({
 			required: false,
 		},
 		agentId: {
-			type: Number,
+			type: String,
 			required: false,
 		},
 	},
