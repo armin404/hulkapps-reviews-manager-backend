@@ -4,9 +4,9 @@ const {
 } = require('../controllers/reviews_mech');
 // HEROKU ADVANCED SCHEDULER ADD-ON => TASK
 
-(async function sendOutOfStockEmailOnCurrentROTMS() {
+(async function syncNewestData() {
 	try {
-		const scrape = retrieveNewestReviewsAndUpdateDb();
+		const scrape = await retrieveNewestReviewsAndUpdateDb();
 
 		process.exit();
 	} catch (err) {
