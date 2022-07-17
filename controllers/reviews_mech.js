@@ -7,6 +7,7 @@ const axios = require('axios');
 const delay = require('delay');
 const moment = require('moment');
 const User = require('../models/user_sch');
+const dotenv = require('dotenv');
 const { search } = require('../routes/reviews');
 
 // Route http://localhost:5000/ha.api/v1/reviews/retrive-reviews
@@ -596,35 +597,93 @@ exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
 	// const update = { isSentToSlack: req.body.isSentToSlack };
 	// const updateReview = await Review.findOneAndUpdate(filter, update);
 
+	const {
+		storeName,
+		storeLocation,
+		numberOfStars,
+		comment,
+		dateOfReview,
+		appName,
+		postId,
+	} = req.body;
+
+	const isSentToSlackCheck = await Review.count({
+		postId: { $eq: postId },
+		isSentToSlack: { $eq: true },
+	});
+	console.log(isSentToSlackCheck);
+	if (isSentToSlackCheck > 0) {
+		return;
+	}
+
+	const imgUrl = await Apps.find({
+		appName: {
+			$eq: appName,
+		},
+	});
+
+	let stars = '';
+
+	if (numberOfStars === 1) {
+		stars = ':star:';
+	} else if (numberOfStars === 2) {
+		stars = ':star::star:';
+	} else if (numberOfStars === 3) {
+		stars = ':star::star::star:';
+	} else if (numberOfStars === 4) {
+		stars = ':star::star::star::star:';
+	} else {
+		stars = ':star::star::star::star::star:';
+	}
+
+	const reviewData = {
+		storeName: storeName,
+		storeLocation: storeLocation,
+		numberOfStars: stars,
+		comment: comment,
+		imageURL: imgUrl,
+		dateOfReview: dateOfReview,
+	};
+
+	const webhookURL = procces.env.SLACK_WEBHOOK;
 	const message = {
-		storeName: 'ttt',
-		location: 'safew',
-		rating: '5',
-		date: '324',
-		commetnt: 'qwfwe',
-		agent: 'nnnaknda',
+		blocks: [
+			{
+				type: 'divider',
+			},
+			{
+				type: 'section',
+				text: {
+					type: 'mrkdwn',
+					text: `*${reviewData.storeName}*\n *Location*: ${reviewData.storeLocation} \n ${reviewData.stars} 4 of 5 Star Review\n ${reviewData.comment}`,
+				},
+				accessory: {
+					type: 'image',
+					image_url: reviewData.imageURL,
+					alt_text: 'alt text for image',
+				},
+			},
+			{
+				type: 'divider',
+			},
+			{
+				type: 'section',
+				text: {
+					type: 'mrkdwn',
+					text: `Date of Review: ${reviewData.dateOfReview}`,
+				},
+			},
+		],
 	};
 	axios
-		.post('', {
-			blocks: [
-				{
-					type: 'section',
-					text: {
-						type: 'mrkdwn',
-						text: `Store Name: ${message.storeName}`,
-					},
-				},
-				{
-					type: 'section',
-					text: {
-						type: 'mrkdwn',
-						text: `Location: ${message.location}`,
-					},
-				},
-			],
-		})
-		.then(() => {
-			res.send('Form submitted!');
+		.post(webhookURL, message)
+		.then(async () => {
+			res.send('Sent To Slack');
+
+			const filter = { postId: postId };
+			const update = { isSentToSlack: true };
+
+			const updateReview = await Review.findOneAndUpdate(filter, update);
 		})
 		.catch(() => {
 			res.send('Form submission failed!');

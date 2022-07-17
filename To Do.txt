@@ -1,0 +1,4 @@
+slack message construction
+scrape reply
+reply validation
+scrape again if there is reply and was not erlier
