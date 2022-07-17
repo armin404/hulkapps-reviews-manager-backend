@@ -47,7 +47,6 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 				await axios.get(url).then((res) => {
 					const $ = cheerio.load(res.data);
 
-					console.log('Page count ', pageCountTemp);
 					$('.review-listing ').each(function (i, element) {
 						const $element = $(element);
 
@@ -90,6 +89,16 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 							.first()
 							.text();
 
+
+
+						const $developerResponse = $element.find('.review-reply .review-content .truncate-content-copy').children().text().trim();
+
+						let developerResponse = $developerResponse
+						if(!$developerResponse){
+							developerResponse = 'This Review has No response'
+						}
+
+
 						let isReplied = false;
 						if ($isReplied) {
 							isReplied = true;
@@ -104,6 +113,7 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 							storeName: $reviewStore,
 							location: $reviewLocation,
 							comment: $reviewComment,
+							developerReply:developerResponse,
 							isReplied: isReplied,
 							isSentToSlack: false,
 							app: item,

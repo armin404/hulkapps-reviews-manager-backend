@@ -29,6 +29,10 @@ const ReviewSchema = new mongoose.Schema({
 		type: String,
 		required: false,
 	},
+	developerReply:{
+		type: String,
+		required: false,
+	},
 	reviewDateStamp: {
 		type: Date,
 	},
