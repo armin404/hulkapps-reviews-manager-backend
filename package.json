@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"task:scrape-newest": "node -r esm tasks/scrape-newest.js",
+		"task:scrape-newest": "node -r tasks/scrape-newest.js",
 		"start": "nodemon server.js"
 	},
 	"keywords": [],
