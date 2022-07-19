@@ -19,14 +19,17 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 	// Map app names
 	const refined = apps.map((item) => item.appName);
 	let pageCountTemp = 2;
-
 	//Run for each APP
 	for (let i = 0; i < refined.length; i++) {
 		let item = refined[i];
 
 		// Get nuber of avalible pages for each app (ONCE!!!)
 		const url2 = `https://apps.shopify.com/${refined[i]}/reviews`;
-
+		const imgUrl = await Apps.find({
+			appName: {
+				$eq: item,
+			},
+		}).select('appPhotoUrl displayAppName -_id');
 		await axios.get(url2).then((res) => {
 			const $ = cheerio.load(res.data);
 
@@ -89,15 +92,18 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 							.first()
 							.text();
 
+						const $developerResponse = $element
+							.find(
+								'.review-reply .review-content .truncate-content-copy'
+							)
+							.children()
+							.text()
+							.trim();
 
-
-						const $developerResponse = $element.find('.review-reply .review-content .truncate-content-copy').children().text().trim();
-
-						let developerResponse = $developerResponse
-						if(!$developerResponse){
-							developerResponse = 'This Review has No response'
+						let developerResponse = $developerResponse;
+						if (!$developerResponse) {
+							developerResponse = 'This Review has No response';
 						}
-
 
 						let isReplied = false;
 						if ($isReplied) {
@@ -113,9 +119,9 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 							storeName: $reviewStore,
 							location: $reviewLocation,
 							comment: $reviewComment,
-							developerReply:developerResponse,
+							developerReply: developerResponse,
 							isReplied: isReplied,
-							isSentToSlack: false,
+							isSentToSlack: true,
 							app: item,
 							reviewDateStamp: reviewDateStamp,
 						};
@@ -132,6 +138,59 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 									console.log(review.postId);
 
 									const data = Review.create(review);
+									//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+									let stars = '';
+
+									if (review.rating === '1') {
+										stars = ':star:';
+									} else if (review.rating === '2') {
+										stars = ':star::star:';
+									} else if (review.rating === '3') {
+										stars = ':star::star::star:';
+									} else if (review.rating === '4') {
+										stars = ':star::star::star::star:';
+									} else {
+										stars =
+											':star::star::star::star::star:';
+									}
+
+									const webhookURL =
+										'https://hooks.slack.com/services/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';
+									const message = {
+										blocks: [
+											{
+												type: 'divider',
+											},
+											{
+												type: 'section',
+												text: {
+													type: 'mrkdwn',
+													text: `*App*: ${imgUrl[0].displayAppName}\n\n *${review.storeName}*\n *Location*: ${review.location} \n ${stars} ${review.rating} of 5 Star Review\n ${review.comment}`,
+												},
+												accessory: {
+													type: 'image',
+													image_url:
+														imgUrl[0].appPhotoUrl,
+													alt_text:
+														'alt text for image',
+												},
+											},
+											{
+												type: 'section',
+												text: {
+													type: 'mrkdwn',
+													text: `Date of Review: ${review.date}`,
+												},
+											},
+											{
+												type: 'divider',
+											},
+										],
+									};
+									axios.post(webhookURL, message);
+
+									//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 								} else {
 									//If yes skip
 									console.log('Review exists');
@@ -175,6 +234,11 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 			try {
 				//Hitting only page 1 of every app since all newest reviews are on page one
 				const url = `https://apps.shopify.com/${item}/reviews`;
+				const imgUrl = await Apps.find({
+					appName: {
+						$eq: item,
+					},
+				}).select('appPhotoUrl displayAppName -_id');
 				console.log(url);
 
 				//Scraper Query (Do not change)!!!
@@ -244,10 +308,11 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 							location: $reviewLocation,
 							comment: $reviewComment,
 							isReplied: isReplied,
-							isSentToSlack: false,
+							isSentToSlack: true,
 							app: item,
 							reviewDateStamp: reviewDateStamp,
 						};
+
 						// Check if Review Exists in DB
 						Review.exists(
 							{ postId: review.postId },
@@ -259,6 +324,59 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 									console.log(review.postId);
 									console.log('Writing New Review');
 									const data = Review.create(review);
+									//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+									let stars = '';
+
+									if (review.rating === '1') {
+										stars = ':star:';
+									} else if (review.rating === '2') {
+										stars = ':star::star:';
+									} else if (review.rating === '3') {
+										stars = ':star::star::star:';
+									} else if (review.rating === '4') {
+										stars = ':star::star::star::star:';
+									} else {
+										stars =
+											':star::star::star::star::star:';
+									}
+
+									const webhookURL =
+										'https://hooks.slack.com/services/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';
+									const message = {
+										blocks: [
+											{
+												type: 'divider',
+											},
+											{
+												type: 'section',
+												text: {
+													type: 'mrkdwn',
+													text: `*App*: ${imgUrl[0].displayAppName}\n\n *${review.storeName}*\n *Location*: ${review.location} \n ${stars} ${review.rating} of 5 Star Review\n ${review.comment}`,
+												},
+												accessory: {
+													type: 'image',
+													image_url:
+														imgUrl[0].appPhotoUrl,
+													alt_text:
+														'alt text for image',
+												},
+											},
+											{
+												type: 'section',
+												text: {
+													type: 'mrkdwn',
+													text: `Date of Review: ${review.date}`,
+												},
+											},
+											{
+												type: 'divider',
+											},
+										],
+									};
+									axios.post(webhookURL, message);
+
+									//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 								} else {
 									//If yes skip
 									console.log('Review exists');
@@ -475,8 +593,43 @@ exports.numberOfReviewsPerApp = asyncHandeler(async (req, res, next) => {
 	// Map app names
 	const refined = apps.map((item) => item.appName);
 
+	const todayDate = new Date();
+
+	//This Month
+	const firstDayOfThisMonth = moment(todayDate).startOf('month');
+
+	// Last Month
+	const startDayOfPrevWeek = moment(todayDate)
+		.subtract(1, 'month')
+		.startOf('month');
+	const lastDayOfPrevWeek = moment(todayDate)
+		.subtract(1, 'month')
+		.endOf('month');
+
 	for (let i = 0; i < refined.length; i++) {
+		/////////////////////////////////////////////////////////////////////////
 		let item = refined[i];
+
+		const lastMonthReviews = await Review.count({
+			reviewDateStamp: {
+				$gte: startDayOfPrevWeek,
+				$lt: lastDayOfPrevWeek,
+			},
+			app: {
+				$eq: item,
+			},
+		});
+
+		const thisMonthReviews = await Review.count({
+			reviewDateStamp: {
+				$gte: firstDayOfThisMonth,
+			},
+			app: {
+				$eq: item,
+			},
+		});
+
+		///////////////////////////////////////////////////////////
 
 		const reviews = await Review.count({
 			app: {
@@ -487,6 +640,8 @@ exports.numberOfReviewsPerApp = asyncHandeler(async (req, res, next) => {
 		const res = {
 			appName: item,
 			numberOfReviews: reviews,
+			thisMonth: thisMonthReviews,
+			lastMonth: lastMonthReviews,
 		};
 
 		data.push(res);
@@ -630,8 +785,8 @@ exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
 		appName: {
 			$eq: appName,
 		},
-	});
-
+	}).select('appPhotoUrl -_id');
+	console.log(imgUrl);
 	let stars = '';
 
 	if (numberOfStars === 1) {
@@ -646,16 +801,19 @@ exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
 		stars = ':star::star::star::star::star:';
 	}
 
+	console.log(stars);
+
 	const reviewData = {
 		storeName: storeName,
 		storeLocation: storeLocation,
 		numberOfStars: stars,
 		comment: comment,
-		imageURL: imgUrl,
+		imageURL: imgUrl[0].appPhotoUrl,
 		dateOfReview: dateOfReview,
 	};
-
-	const webhookURL = procces.env.SLACK_WEBHOOK;
+	console.log(reviewData);
+	const webhookURL =
+		'https://hooks.slack.com/services/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';
 	const message = {
 		blocks: [
 			{
@@ -665,7 +823,7 @@ exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
 				type: 'section',
 				text: {
 					type: 'mrkdwn',
-					text: `*${reviewData.storeName}*\n *Location*: ${reviewData.storeLocation} \n ${reviewData.stars} 4 of 5 Star Review\n ${reviewData.comment}`,
+					text: `*${reviewData.storeName}*\n *Location*: ${reviewData.storeLocation} \n ${reviewData.numberOfStars} 4 of 5 Star Review\n ${reviewData.comment}`,
 				},
 				accessory: {
 					type: 'image',
@@ -690,10 +848,10 @@ exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
 		.then(async () => {
 			res.send('Sent To Slack');
 
-			const filter = { postId: postId };
-			const update = { isSentToSlack: true };
+			// const filter = { postId: postId };
+			// const update = { isSentToSlack: true };
 
-			const updateReview = await Review.findOneAndUpdate(filter, update);
+			// const updateReview = await Review.findOneAndUpdate(filter, update);
 		})
 		.catch(() => {
 			res.send('Form submission failed!');
