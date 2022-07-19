@@ -155,8 +155,7 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 											':star::star::star::star::star:';
 									}
 
-									const webhookURL =
-										'https://hooks.slack.com/services/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';
+									const webhookURL = '';
 									const message = {
 										blocks: [
 											{
@@ -355,8 +354,7 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 											':star::star::star::star::star:';
 									}
 
-									const webhookURL =
-										'https://hooks.slack.com/services/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';
+									const webhookURL = '';
 									const message = {
 										blocks: [
 											{
@@ -704,11 +702,13 @@ exports.getDashboardData = asyncHandeler(async (req, res, next) => {
 
 	res.status(201).json({
 		success: true,
-		today: todayRev,
-		lastMonthReviews: lastMonthReviews,
-		thisMonthReviews: thisMonthReviews,
-		thisWeek: reviewsThisWeek,
-		numberOfReviews: reviewsCount,
+		data: [
+			todayRev,
+			reviewsThisWeek,
+			thisMonthReviews,
+			lastMonthReviews,
+			reviewsCount,
+		],
 	});
 });
 
