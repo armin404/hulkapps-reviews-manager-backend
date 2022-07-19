@@ -155,7 +155,8 @@ exports.retrieveReviewsAndUpdateDb = asyncHandeler(async (req, res, next) => {
 											':star::star::star::star::star:';
 									}
 
-									const webhookURL = '';
+									const webhookURL =
+										'https://hooks.slack.com/services/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';
 									const message = {
 										blocks: [
 											{
@@ -354,7 +355,8 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 											':star::star::star::star::star:';
 									}
 
-									const webhookURL = '';
+									const webhookURL =
+										'https://hooks.slack.com/services/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';
 									const message = {
 										blocks: [
 											{
@@ -726,7 +728,7 @@ exports.getDashboardData = asyncHandeler(async (req, res, next) => {
 
 exports.assignAgentToReview = asyncHandeler(async (req, res, next) => {
 	const filter = { postId: req.params.id };
-	const update = { assignedAgent: req.body.assignedAgent };
+	const update = { assignedAgent: req.body.assignAgentData };
 
 	console.log(filter);
 	console.log(update);
@@ -749,6 +751,8 @@ exports.getReviewsFilteredByAgents = asyncHandeler(async (req, res, next) => {
 	});
 	let reviewsPerAgent = [];
 	const refined = agents.map((item) => item.email);
+	console.log(refined);
+
 	for (let i = 0; i < refined.length; i++) {
 		let item = refined[i];
 		console.log(item);
