@@ -292,6 +292,18 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 							.first()
 							.text();
 
+						const $developerResponse = $element
+							.find(
+								'.review-reply .review-content .truncate-content-copy'
+							)
+							.children()
+							.text()
+							.trim();
+
+						let developerResponse = $developerResponse;
+						if (!$developerResponse) {
+							developerResponse = 'This Review has No response';
+						}
 						let isReplied = false;
 						if ($isReplied) {
 							isReplied = true;
@@ -307,6 +319,8 @@ exports.retrieveNewestReviewsAndUpdateDb = asyncHandeler(
 							storeName: $reviewStore,
 							location: $reviewLocation,
 							comment: $reviewComment,
+							developerReply: developerResponse,
+
 							isReplied: isReplied,
 							isSentToSlack: true,
 							app: item,
@@ -557,32 +571,25 @@ exports.getAllReviews = asyncHandeler(async (req, res, next) => {
 	}
 });
 
-exports.getNuberOfReviews = asyncHandeler(async (req, res, next) => {
-	const reviews = await Review.find({});
+// exports.getNuberOfReviews = asyncHandeler(async (req, res, next) => {
+// 	const reviews = await Review.find({});
 
-	const numberOfReviews = reviews.length;
+// 	const numberOfReviews = reviews.length;
 
-	res.status(201).json({
-		success: true,
-		data: numberOfReviews,
-	});
-});
+// 	res.status(201).json({
+// 		success: true,
+// 		data: numberOfReviews,
+// 	});
+// });
 
-exports.getThisWeek = asyncHandeler(async (req, res, next) => {
-	const todayDate = new Date();
-	const thisWeek = moment(todayDate).startOf('week');
+// exports.getThisWeek = asyncHandeler(async (req, res, next) => {
+// 	const todayDate = new Date();
 
-	const reviews = await Review.count({
-		reviewDateStamp: {
-			$gte: thisWeek,
-		},
-	});
-
-	res.status(200).json({
-		success: true,
-		data: reviews,
-	});
-});
+// 	res.status(200).json({
+// 		success: true,
+// 		data: reviews,
+// 	});
+// });
 
 exports.numberOfReviewsPerApp = asyncHandeler(async (req, res, next) => {
 	let data = [];
@@ -653,24 +660,16 @@ exports.numberOfReviewsPerApp = asyncHandeler(async (req, res, next) => {
 	});
 });
 
-exports.getTodayReviews = asyncHandeler(async (req, res, next) => {
+exports.getDashboardData = asyncHandeler(async (req, res, next) => {
 	const todayDate = new Date();
 	const today = moment(todayDate).startOf('day');
 
-	const reviews = await Review.count({
+	const todayRev = await Review.count({
 		reviewDateStamp: {
 			$gte: today,
 		},
 	});
-
-	res.status(201).json({
-		success: true,
-		data: reviews,
-	});
-});
-
-exports.getThisMonthLastMonth = asyncHandeler(async (req, res, next) => {
-	const todayDate = new Date();
+	const reviewsCount = await Review.count({});
 
 	// Last Month
 	const startDayOfPrevWeek = moment(todayDate)
@@ -695,15 +694,35 @@ exports.getThisMonthLastMonth = asyncHandeler(async (req, res, next) => {
 			$gte: firstDayOfThisMonth,
 		},
 	});
+	const thisWeek = moment(todayDate).startOf('week');
+
+	const reviewsThisWeek = await Review.count({
+		reviewDateStamp: {
+			$gte: thisWeek,
+		},
+	});
 
 	res.status(201).json({
 		success: true,
-		data: {
-			lastMonthReviews: lastMonthReviews,
-			thisMonthReviews: thisMonthReviews,
-		},
+		today: todayRev,
+		lastMonthReviews: lastMonthReviews,
+		thisMonthReviews: thisMonthReviews,
+		thisWeek: reviewsThisWeek,
+		numberOfReviews: reviewsCount,
 	});
 });
+
+// exports.getThisMonthLastMonth = asyncHandeler(async (req, res, next) => {
+// 	const todayDate = new Date();
+
+// 	res.status(201).json({
+// 		success: true,
+// 		data: {
+// 			lastMonthReviews: lastMonthReviews,
+// 			thisMonthReviews: thisMonthReviews,
+// 		},
+// 	});
+// });
 
 exports.assignAgentToReview = asyncHandeler(async (req, res, next) => {
 	const filter = { postId: req.params.id };
@@ -772,12 +791,24 @@ exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
 		postId,
 	} = req.body;
 
+	console.log(
+		storeName,
+		storeLocation,
+		numberOfStars,
+		comment,
+		dateOfReview,
+		appName,
+		postId
+	);
+
 	const isSentToSlackCheck = await Review.count({
 		postId: { $eq: postId },
 		isSentToSlack: { $eq: true },
 	});
 	console.log(isSentToSlackCheck);
 	if (isSentToSlackCheck > 0) {
+		console.log('Is senttttt');
+
 		return;
 	}
 
@@ -786,7 +817,6 @@ exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
 			$eq: appName,
 		},
 	}).select('appPhotoUrl -_id');
-	console.log(imgUrl);
 	let stars = '';
 
 	if (numberOfStars === 1) {
@@ -800,6 +830,7 @@ exports.slackChanelWebhook = asyncHandeler(async (req, res, next) => {
 	} else {
 		stars = ':star::star::star::star::star:';
 	}
+	console.log(stars);
 
 	console.log(stars);
 
