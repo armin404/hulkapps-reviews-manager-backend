@@ -1,13 +1,16 @@
 #!/usr/bin/env node
-const {
-	retrieveNewestReviewsAndUpdateDb,
-} = require('../controllers/reviews_mech');
+
+const axios = require('axios');
+
 // HEROKU ADVANCED SCHEDULER ADD-ON => TASK
 
-(async function syncNewestData() {
+const URL = 'http://localhost:5000'(async function syncNewestData() {
 	try {
-		const scrape = await retrieveNewestReviewsAndUpdateDb();
-
+		axios
+			.post(URL + '/ha.api/v1/reviews/retrive-newest-reviews')
+			.then(function (response) {
+				console.log(response);
+			});
 		process.exit();
 	} catch (err) {
 		process.exit(1);
